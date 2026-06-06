@@ -1,0 +1,3 @@
+[submodule "Swivel"]
+	path = Swivel
+	url = https://github.com/bk20x/Swivel.git
