@@ -10,4 +10,5 @@ bin           = @["swivelup"]
 
 # Dependencies
 
-requires "nim >= 2.2.8"
+requires "nim >= 2.2.0"
+requires "nigui"
