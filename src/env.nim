@@ -1,22 +1,37 @@
 import std/registry 
+type
+  InstallationStatus* = tuple
+    success: bool
+    pathToInstallation: string
+
 const 
   SwivelupEnvKey* = "Swivelup"
+  AdlEnvKey* = "SwivelupADL"
 
-template setUserEnvironmentVariable*(key, val: string): untyped =
-  setUnicodeValue(
-    path   = "Environment",
-    key    = key,
-    val    = val,
-    handle = HKEY_CURRENT_USER
-  )
+template setUserEnvironmentVariable*(k, v: string): bool =
+  try:
+    setUnicodeValue(
+      path   = "Environment",
+      key    = k,
+      val    = v,
+      handle = HKEY_CURRENT_USER
+    )
+    true
+  except OSError:
+    false
 
 template getUserEnvironmentVariable(key: string): string =
   getUnicodeValue("Environment", key, HKEY_CURRENT_USER)
 
-proc checkInstallation*: tuple[success: bool, pathToInstallation: string] =
+proc checkSwivelInstalled*: InstallationStatus {.raises: [].} =
   try:
     result.pathToInstallation = getUserEnvironmentVariable(SwivelupEnvKey)
     result.success = true
   except OSError:
     result.success = false 
 
+proc checkADLSetup*: InstallationStatus {.raises: [].} = 
+  try:
+    result.pathToInstallation = getUserEnvironmentVariable(AdlEnvKey)
+  except OSError:
+    result.success = false

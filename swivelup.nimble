@@ -11,5 +11,4 @@ bin           = @["swivelup"]
 # Dependencies
 
 requires "nim >= 2.2.0"
-requires "naylib"
-requires "https://github.com/planetis-m/naygui"
+requires "nigui"
