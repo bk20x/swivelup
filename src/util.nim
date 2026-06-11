@@ -5,6 +5,13 @@ template with*(thing, body): untyped =
     
 
 
+template noexn*(code): bool =
+  try:
+    discard code 
+    true
+  except CatchableError:
+    false
+
   
 
   

@@ -6,7 +6,8 @@ type
 
 const 
   SwivelupEnvKey* = "Swivelup"
-  AdlEnvKey* = "SwivelupADL"
+  SwivelupSuccessfulInstallKey* = "SwivelupX"
+  AdlEnvKey*      = "SwivelupADL"
 
 template setUserEnvironmentVariable*(k, v: string): bool =
   try:
@@ -20,10 +21,10 @@ template setUserEnvironmentVariable*(k, v: string): bool =
   except OSError:
     false
 
-template getUserEnvironmentVariable(key: string): string =
+template getUserEnvironmentVariable*(key: string): string =
   getUnicodeValue("Environment", key, HKEY_CURRENT_USER)
 
-proc checkSwivelInstalled*: InstallationStatus {.raises: [].} =
+proc checkSwivelPathSet*: InstallationStatus {.raises: [].} =
   try:
     result.pathToInstallation = getUserEnvironmentVariable(SwivelupEnvKey)
     result.success = true
@@ -33,5 +34,6 @@ proc checkSwivelInstalled*: InstallationStatus {.raises: [].} =
 proc checkADLSetup*: InstallationStatus {.raises: [].} = 
   try:
     result.pathToInstallation = getUserEnvironmentVariable(AdlEnvKey)
+    result.success = true
   except OSError:
     result.success = false
