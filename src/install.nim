@@ -23,3 +23,5 @@ proc tryInstallSwivelTo*(path: string): tuple[success: bool, err: ref Exception]
     return (success: true, err: nil)
   except OSError, IOError:
     return (success: false, err: getCurrentException())
+
+
