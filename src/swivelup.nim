@@ -1,6 +1,6 @@
 import nigui
 import util, env
-import std/[strformat, osproc, os]
+import std/[strformat, osproc]
 import install
 
 
@@ -51,9 +51,7 @@ with root:
       it.editable  = false # maybe later but this stops my overthinking for now. later i want to allow input here and make sure its a valid directory
     it.add(swivelPathBox)
 
-    var
-      browseBtn = newButton("Browse")
-      setBtn = newButton("Set")
+    var browseBtn = newButton("Browse")
     with browseBtn:
       it.onClick = proc (ev: auto) =
         let dialog = newSelectDirectoryDialog()

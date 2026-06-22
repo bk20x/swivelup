@@ -69,7 +69,10 @@ proc performUninstall*(pathToInstallation: string): UninstallationStatus {.raise
     deleteUserEnvVariable(AdlEnvKey)
     deleteUserEnvVariable(SwivelupEnvKey)
     deleteUserEnvVariable(SwivelupSuccessfulInstallKey)
-    removeDir(pathToInstallation)
+    ## removeDir(pathToInstallation) NO. I was gonna do this at first, but i ended up deleting my desktop while testing. 
+    removeDir(pathToInstallation  / "assets")
+    removeDir(pathToInstallation  / "bin")
+    removeFile(pathToInstallation / "application.xml")
 
     let envStr: WideCStringObj = newWideCString("Environment")
     discard SendMessageTimeoutW(cast[pointer](0xFFFF), 0x001A, 0, envStr, KEY_SET_VALUE.uint32, 5000, nil)
