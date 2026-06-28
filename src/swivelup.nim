@@ -2,12 +2,12 @@ import nigui
 import util, env
 import std/[strformat, osproc]
 import install
-
+from std/os import `/`
 
 var 
   (isSwivelPathSet, pathToInstallation) = checkSwivelPathSet()
   (isAdlPathSet, pathToAdl) = checkADLSetup()
-  isSwivelInstalled = noexn getUserEnvironmentVariable(SwivelupSuccessfulInstallKey) # need to clean all this dirty stuff up later
+  (isSwivelInstalled, pathToSwivel) = checkSwivelInstalled()
 
 init app
  
@@ -56,10 +56,17 @@ with root:
       it.onClick = proc (ev: auto) =
         let dialog = newSelectDirectoryDialog()
         dialog.run()
-        let dir = move(dialog.selectedDirectory)
+        let dir = dialog.selectedDirectory
         pathToInstallation = dir
         swivelPathBox.text = dir
-        isSwivelPathSet = dir.len > 0
+        if dir.len > 0:
+          isSwivelPathSet = true 
+          let success = setUserEnvironmentVariable(SwivelupEnvKey, dir)
+          if not success:
+            window.alert(
+              title   = "Error!",
+              message = "Could not set environment variable"
+            )
         updateBodyText()
     it.add(browseBtn)       
   it.add(swivelPathBar)
@@ -88,7 +95,14 @@ with root:
         let path = dialog.files[0]
         pathToAdl       = path
         adlPathBox.text = path
-        isAdlPathSet    = path.len > 0
+        if path.len > 0:
+          isAdlPathSet = true 
+          let success = setUserEnvironmentVariable(AdlEnvKey, path)
+          if not success:
+            window.alert(
+              title   = "Error!",
+              message = "Could not set environment variable"
+            )
         updateBodyText()
     it.add(browseBtn)
   it.add(adlPathBar)
@@ -107,22 +121,23 @@ with root:
         if not isSwivelPathSet:
           window.alert(title = "oops!", message = "Before you can install you need to select a destination path")
         else:
-          let (success, err) = tryInstallSwivelTo(pathToInstallation)
+          let (success, err) = tryInstallSwivelTo(pathToInstallation/"Swivel")
           if success:
             isSwivelInstalled = true 
+            pathToSwivel = pathToInstallation / "Swivel"
             updateBodyText()
             navBar.remove(installBtn)
             navBar.add(launchBtn)
             navBar.add(uninstBtn)
           else:
-            window.alert(title   = "oh noes!",
+            window.alert(title    = "oh noes!",
                           message = &"Error installing files to {pathToInstallation}. Message: {err.msg}")
     
 
     uninstBtn = newButton("Uninstall and remove environment variables")
     with uninstBtn:
       it.onClick = proc (ev: auto) =
-        let (success, msg) = performUninstall(pathToInstallation)
+        let (success, msg) = performUninstall(pathToSwivel)
         if not success:
           window.alert(title = "Uh Oh", message = fmt"Error uninstalling: {msg}")
         else:
@@ -142,8 +157,8 @@ with root:
         discard startProcess(
           command     = "cmd.exe",
           args        = @["/c", pathToAdl, "application.xml"],
-          workingDir  = pathToInstallation,
-          options     = {poUsePath}
+          workingDir  = pathToSwivel,
+          options     = {poUsePath, poDaemon}
         )
 
     if isSwivelInstalled: 

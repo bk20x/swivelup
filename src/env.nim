@@ -41,16 +41,24 @@ proc checkADLSetup*: InstallationStatus {.raises: [].} =
   except OSError:
     result.success = false
 
-proc RegOpenKeyExW(hKey: HKEY, lpSubKey: WideCString, ulOptions: int32, samDesired: int32, phkResult: pointer): int32
+
+proc checkSwivelInstalled*: InstallationStatus {.raises: [].} =
+  try:
+    result.pathToInstallation = getUserEnvironmentVariable(SwivelupSuccessfulInstallKey)
+    result.success = true 
+  except OSError:
+    result.success = false
+
+proc RegOpenKeyExW(hKey: HKEY; lpSubKey: WideCString; ulOptions, samDesired: int32; phkResult: pointer): int32
   {.stdcall, dynlib: "advapi32", importc: "RegOpenKeyExW".}
-proc RegDeleteValueW(hKey: HKEY, lpValueName: WideCString): int32
+proc RegDeleteValueW(hKey: HKEY; lpValueName: WideCString): int32
   {.stdcall, dynlib: "advapi32", importc: "RegDeleteValueW".}
 proc RegCloseKey(hKey: HKEY): int32
   {.stdcall, dynlib: "advapi32", importc: "RegCloseKey".}
 
 # refresh Windows env???
-proc SendMessageTimeoutW(hWnd: pointer, Msg: uint32, wParam: int, lParam: WideCString,
-                        fuFlags: uint32, uTimeout: uint32, lpdwResult: pointer): int32
+proc SendMessageTimeoutW(hWnd: pointer; Msg: uint32; wParam: int; lParam: WideCString;
+                         fuFlags, uTimeout: uint32; lpdwResult: pointer): int32
   {.stdcall, dynlib: "user32", importc: "SendMessageTimeoutW".}
 
 const KEY_SET_VALUE: int = 0x0002
@@ -72,7 +80,9 @@ proc performUninstall*(pathToInstallation: string): UninstallationStatus {.raise
     ## removeDir(pathToInstallation) NO. I was gonna do this at first, but i ended up deleting my desktop while testing. 
     removeDir(pathToInstallation  / "assets")
     removeDir(pathToInstallation  / "bin")
+    removeDir(pathToInstallation  / "ffmpeg")
     removeFile(pathToInstallation / "application.xml")
+    
 
     let envStr: WideCStringObj = newWideCString("Environment")
     discard SendMessageTimeoutW(cast[pointer](0xFFFF), 0x001A, 0, envStr, KEY_SET_VALUE.uint32, 5000, nil)

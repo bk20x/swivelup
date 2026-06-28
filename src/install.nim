@@ -1,27 +1,17 @@
-import std/[os, tables]
-from build import SwivelBin, SwivelXml, SwivelIcons
+import std/os
+import zippy/ziparchives
+from build import SwivelArchive
 from env   import setUserEnvironmentVariable, SwivelupSuccessfulInstallKey
 
 proc tryInstallSwivelTo*(path: string): tuple[success: bool, err: ref Exception] {.raises: [].} = 
   try:
-    block writeAppMetadata:
-      writeFile(path/"application.xml", SwivelXml)
-    block writeSwf:
-      let 
-        swfDir = path / "bin"
-        swfBin = swfDir / "Swivel.swf"
-      createDir(swfDir) 
-      writeFile(swfBin, SwivelBin)
-    block writeAssets:
-      let
-        assetsDir = path / "assets" # in case we need to package more later
-        iconsDir  = assetsDir / "icons" / ""
-      createDir(iconsDir) 
-      for filename, imgData in SwivelIcons:
-        writeFile(iconsDir/filename, imgData)
+    let tmpname = "tmp.zip"
+    writeFile(tmpname,  SwivelArchive)
+    extractAll(tmpname, dest = path)
+    removeFile(tmpname)
     discard setUserEnvironmentVariable(SwivelupSuccessfulInstallKey, path)
     return (success: true, err: nil)
-  except OSError, IOError:
+  except OSError, IOError, ZippyError:
     return (success: false, err: getCurrentException())
 
 
