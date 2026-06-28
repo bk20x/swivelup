@@ -1,4 +1,4 @@
-import std/[os, tables]
+import std/[os, tables, sets]
 import zippy/ziparchives
 
 proc collectEntries(): Table[string, string] = 
@@ -7,6 +7,8 @@ proc collectEntries(): Table[string, string] =
   
   for path in walkDirRec(assetsBase):
     let relPath = relativePath(path, assetsBase)
+    if relPath.parentDir notin ["icons", "audio", "inject_swfs"].toHashSet:
+      continue
     result["assets" / relPath] = readFile(path)
   result["application.xml"]             = readFile(swivelPath / "application.xml")
   result["bin/Swivel.swf"]              = readFile(swivelPath / "bin" / "Swivel.swf")
